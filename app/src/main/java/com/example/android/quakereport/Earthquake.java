@@ -5,7 +5,7 @@ public class Earthquake {
     private String mLocality;
     private String mDate;
 
-    public void Earthquake(String magnitude, String locality, String date) {
+    public Earthquake(String magnitude, String locality, String date) {
         mMagnitude = magnitude;
         mLocality = locality;
         mDate = date;
