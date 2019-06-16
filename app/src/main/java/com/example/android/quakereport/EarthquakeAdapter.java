@@ -12,12 +12,10 @@ import java.util.ArrayList;
 public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
 
     private Context mContext;
-    private ArrayList<Earthquake> mEarthquakes;
 
     public EarthquakeAdapter(Context context, ArrayList<Earthquake> earthquakes) {
         super(context, 0, earthquakes);
         mContext = context;
-        mEarthquakes = earthquakes;
     }
 
     @Override
@@ -25,9 +23,10 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
         if (convertView == null) {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.layout_list_item, parent, false);
         }
-        ((TextView) convertView.findViewById(R.id.tv_magnitude)).setText(mEarthquakes.get(position).getMagnitude());
-        ((TextView) convertView.findViewById(R.id.tv_locality)).setText(mEarthquakes.get(position).getmLocality());
-        ((TextView) convertView.findViewById(R.id.tv_date)).setText(mEarthquakes.get(position).getDate());
+        Earthquake currentEarthquake = getItem(position);
+        ((TextView) convertView.findViewById(R.id.tv_magnitude)).setText(currentEarthquake.getMagnitude());
+        ((TextView) convertView.findViewById(R.id.tv_locality)).setText(currentEarthquake.getmLocality());
+        ((TextView) convertView.findViewById(R.id.tv_date)).setText(currentEarthquake.getDate());
         return convertView;
     }
 
