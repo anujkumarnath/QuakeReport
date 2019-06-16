@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,14 +28,24 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
         }
         Earthquake currentEarthquake = getItem(position);
         ((TextView) convertView.findViewById(R.id.tv_magnitude)).setText(currentEarthquake.getMagnitude());
-        ((TextView) convertView.findViewById(R.id.tv_locality)).setText(currentEarthquake.getmLocality());
+        String location = getItem(position).getmLocation();
+        String primary_location = location;
+        String offset = "Near the";
+        String[] strings = location.split(" of ");
+        if (location.contains(" of ")) {
+            offset = strings[0] + " of";
+            primary_location = strings[1];
+        }
+
+        ((TextView) convertView.findViewById(R.id.tv_primary_location)).setText(primary_location);
+        ((TextView) convertView.findViewById(R.id.tv_offset)).setText(offset);
         ((TextView) convertView.findViewById(R.id.tv_date)).setText(formatDate(new Date(currentEarthquake.getTimeInMiliseconds())));
         ((TextView) convertView.findViewById(R.id.tv_time)).setText(formatTime(new Date(currentEarthquake.getTimeInMiliseconds())));
         return convertView;
     }
 
     private String formatDate(Date dateObject) {
-        return new SimpleDateFormat("MMM dd yy").format(dateObject);
+        return new SimpleDateFormat("MMM dd yyyy").format(dateObject);
     }
 
     private String formatTime(Date dateObject) {
