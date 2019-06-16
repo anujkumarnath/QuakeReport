@@ -54,7 +54,7 @@ public final class QueryUtils {
             for (int i = 0; i < features.length(); i++) {
                 JSONObject feature = features.optJSONObject(i);
                 JSONObject properties = feature.optJSONObject("properties");
-                Earthquake currentEarthquake = new Earthquake(properties.optString("mag"), properties.optString("place"), properties.optLong("time"));
+                Earthquake currentEarthquake = new Earthquake((float) properties.optDouble("mag"), properties.optString("place"), properties.optLong("time"));
                 earthquakes.add(currentEarthquake);
             }
 

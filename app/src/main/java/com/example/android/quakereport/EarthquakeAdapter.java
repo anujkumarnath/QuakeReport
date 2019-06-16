@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,7 +28,7 @@ public class EarthquakeAdapter extends ArrayAdapter<Earthquake> {
             convertView = LayoutInflater.from(mContext).inflate(R.layout.layout_list_item, parent, false);
         }
         Earthquake currentEarthquake = getItem(position);
-        ((TextView) convertView.findViewById(R.id.tv_magnitude)).setText(currentEarthquake.getMagnitude());
+        ((TextView) convertView.findViewById(R.id.tv_magnitude)).setText(new DecimalFormat("0.0").format(currentEarthquake.getMagnitude()));
         String location = getItem(position).getmLocation();
         String primary_location = location;
         String offset = "Near the";
