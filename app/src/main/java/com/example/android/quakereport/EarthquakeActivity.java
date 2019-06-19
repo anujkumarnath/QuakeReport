@@ -16,38 +16,99 @@
 package com.example.android.quakereport;
 
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
 import java.util.ArrayList;
+import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Loader;
+import android.widget.TextView;
+
+public class EarthquakeActivity extends AppCompatActivity implements LoaderCallbacks<List<Earthquake>> {
+    private final static String LOG_TAG = EarthquakeActivity.class.getSimpleName();
+    /**
+     * Using a sample query URL
+     */
+    private static final String USGS_REQUEST_URL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=1&limit=100";
+    private EarthquakeAdapter mAdapter;
+    /**
+     * Constant value for the earthquake loader ID. We can choose any integer.
+     * This really only comes into play if you're using multiple loaders.
+     */
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+    private TextView mEmptyStateTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
-        final ArrayList<Earthquake> earthquakes = QueryUtils.extractEarthquakes();
-        // Find a reference to the {@link ListView} in the layout
+        mEmptyStateTextView = findViewById(R.id.emptyView);
         ListView earthquakeListView = findViewById(R.id.list);
 
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        if (isConnected) {
+            Log.d(LOG_TAG, "initLoader()");
+            getLoaderManager().initLoader(EARTHQUAKE_LOADER_ID, null, this);
+        } else {
+            findViewById(R.id.progressBar).setVisibility(View.GONE);
+            mEmptyStateTextView.setText("No internet connection");
+        }
+
+        earthquakeListView.setEmptyView(mEmptyStateTextView);
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
-        earthquakeListView.setAdapter(new EarthquakeAdapter(this, earthquakes));
+        mAdapter = new EarthquakeAdapter(this, new ArrayList<Earthquake>());
+        earthquakeListView.setAdapter(mAdapter);
 
         earthquakeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Uri url = Uri.parse(earthquakes.get(position).getUrl());
+                Uri url = Uri.parse(mAdapter.getItem(position).getUrl());
                 Intent intent = new Intent(Intent.ACTION_VIEW, url);
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 }
             }
         });
+    }
+
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int id, Bundle args) {
+        Log.d(LOG_TAG, "onCreateLoader()");
+        return new EarthquakeLoader(this, USGS_REQUEST_URL);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        Log.d(LOG_TAG, "onLoadFinished()");
+        mEmptyStateTextView.setText(R.string.no_earthquake);
+        findViewById(R.id.progressBar).setVisibility(View.GONE);
+        // Clear the adapter of previous earthquake data
+        mAdapter.clear();
+
+        // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (earthquakes != null && !earthquakes.isEmpty()) {
+            mAdapter.addAll(earthquakes);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader loader) {
+        Log.d(LOG_TAG, "onLoadReset()");
+        // Clear the adapter of previous earthquake data
+        mAdapter.clear();
     }
 }
